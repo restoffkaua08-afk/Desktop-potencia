@@ -3,7 +3,49 @@ import type { GraphEdge, GraphNode, GraphNodeKind } from "./types";
 import "./graph.css";
 import type { RuntimeState, RuntimeStatus } from "../runtime-types";
 
-const colors:Record<GraphNodeKind,string>={project:"#c69b5a",agent:"#76a7d9",skill:"#86b77a",plugin:"#a986c7",task:"#d98d65",verification:"#65b9ad"};
+const colors:Record<GraphNodeKind,string>={project:"#c69b5a",agent:"#76a7d9",skill:"#86b77a",plugin:"#a986c7",task:"#d98d65",verification:"#65b9ad",tool:"#b7a7d9"};
+
+const relationKeys:Record<string,GraphNodeKind>={agentId:"agent",projectId:"project",skillId:"skill",pluginId:"plugin",taskId:"task",verificationId:"verification",toolId:"tool"};
+
+function runtimeNodes(state: RuntimeState): { nodes: GraphNode[]; edges: GraphEdge[] } {
+ const nodes: GraphNode[] = [
+  {id:"potencia",label:"Potencia Runtime",kind:"project",x:500,y:270,status:"active"},
+  ...state.projects.map((p,i)=>({id:`project:${p.id}`,label:p.name||p.label||p.id,kind:"project" as const,x:500,y:90+i*70,status:p.status||"active"})),
+  ...state.agents.map((a,i)=>({id:`agent:${a.id}`,label:a.name,kind:"agent" as const,x:260+(i%3)*150,y:130+Math.floor(i/3)*170,status:a.state||"idle"})),
+  ...state.activeSkills.map((s,i)=>({id:`skill:${s.id}`,label:s.name||s.label||s.id,kind:"skill" as const,x:90,y:90+i*80,status:s.status||"active"})),
+  ...state.activePlugins.map((p,i)=>({id:`plugin:${p.id}`,label:p.name||p.label||p.id,kind:"plugin" as const,x:900,y:90+i*80,status:p.status||"active"})),
+  ...state.tasks.map((t,i)=>({id:`task:${t.id}`,label:t.name||t.label||t.id,kind:"task" as const,x:500,y:390+i*70,status:t.status||"active"})),
+  ...state.verifications.map((v,i)=>({id:`verification:${v.id}`,label:v.name||v.label||v.id,kind:"verification" as const,x:720,y:430+i*60,status:v.status||"running"})),
+  ...state.tools.map((t,i)=>({id:`tool:${t.id}`,label:t.name||t.label||t.id,kind:"tool" as const,x:90,y:390+i*70,status:t.status||"active"}))
+ ];
+ const byId=new Map(nodes.map(node=>[node.id,node]));
+ const edges: GraphEdge[] = [];
+ for(const n of nodes) if(n.id!=="potencia") edges.push({from:"potencia",to:n.id,label:"runtime"});
+
+ const collections: Array<[keyof RuntimeState, GraphNodeKind]> = [
+  ["projects","project"],["agents","agent"],["activeSkills","skill"],["activePlugins","plugin"],
+  ["tasks","task"],["verifications","verification"],["tools","tool"]
+ ];
+ for(const [collection] of collections){
+  for(const item of state[collection] as RuntimeEntity[]){
+   const from=byId.get(`${relationKeys[collection as string]||""}:${item.id}`);
+   for(const [key,value] of Object.entries(item)){
+    const kind=relationKeys[key];
+    if(!kind || typeof value!=="string") continue;
+    const target=byId.get(`${kind}:${value}`);
+    if(from && target && from.id!==target.id) edges.push({from:from.id,to:target.id,label:key.replace("Id","")});
+   }
+  }
+ }
+ return {nodes,edges};
+}port { useMemo, useRef, useState, type PointerEvent } from "react";
+import type { GraphEdge, GraphNode, GraphNodeKind } from "./types";
+import "./graph.css";
+import type { RuntimeState, RuntimeStatus } from "../runtime-types";
+
+const colors:Record<GraphNodeKind,string>={project:"#c69b5a",agent:"#76a7d9",skill:"#86b77a",plugin:"#a986c7",task:"#d98d65",verification:"#65b9ad",tool:"#b7a7d9"};
+
+const relationKeys:Record<string,GraphNodeKind>={agentId:"agent",projectId:"project",skillId:"skill",pluginId:"plugin",taskId:"task",verificationId:"verification",toolId:"tool"};
 
 function runtimeNodes(state: RuntimeState): { nodes: GraphNode[]; edges: GraphEdge[] } {
  const nodes: GraphNode[] = [
