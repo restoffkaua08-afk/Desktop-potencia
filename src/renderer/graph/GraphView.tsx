@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type PointerEvent } from "react";
 import type { GraphEdge, GraphNode, GraphNodeKind } from "./types";
 import "./graph.css";
 
@@ -29,7 +29,7 @@ export default function GraphView(){
  const drag=useRef<{x:number;y:number;px:number;py:number}|null>(null);
  const nodes=useMemo(()=>mode==="general"?seed:seed.filter(n=>n.status&&["active","working","reviewing","running","connected"].includes(n.status)),[mode]);
  const visible=new Set(nodes.map(n=>n.id));
- const onPointerDown=(e:React.PointerEvent)=>{(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);drag.current={x:e.clientX,y:e.clientY,px:pan.x,py:pan.y}};
+ const onPointerDown=(e:PointerEvent)=>{(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);drag.current={x:e.clientX,y:e.clientY,px:pan.x,py:pan.y}};
  const onPointerMove=(e:React.PointerEvent)=>{if(!drag.current)return;setPan({x:drag.current.px+e.clientX-drag.current.x,y:drag.current.py+e.clientY-drag.current.y})};
  const onPointerUp=()=>{drag.current=null};
  return <section className="graph-view">
