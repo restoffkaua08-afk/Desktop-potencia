@@ -36,7 +36,13 @@ function applyEvent(state: RuntimeState, event: RuntimeEvent): RuntimeState {
   };
 
   const collection = collectionByType[type];
-  if (collection && payload.item && typeof payload.item === "object" && "id" in payload.item) {
+  if (
+    collection &&
+    payload.item &&
+    typeof payload.item === "object" &&
+    "id" in payload.item &&
+    typeof payload.item.id === "string"
+  ) {
     const item = payload.item as { id: string; [key: string]: unknown };
     const current = state[collection] as Array<{ id: string }>;
     return {
