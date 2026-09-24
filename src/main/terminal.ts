@@ -5,14 +5,14 @@ let terminal: IPty | null = null;
 
 function shellPath() {
   if (process.platform === "win32") {
-    return process.env.COMSPEC ?? "powershell.exe";
+    return process.env.POTENCIA_SHELL ?? "powershell.exe";
   }
   return process.env.SHELL ?? "/bin/sh";
 }
 
 function shellArgs() {
   if (process.platform === "win32") {
-    return [];
+    return ["-NoLogo"];
   }
   return ["-l"];
 }
