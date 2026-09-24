@@ -4,20 +4,73 @@ import "@xterm/xterm/css/xterm.css";
 import "./styles.css";
 import OfficeView from "./office/OfficeView";
 import GraphView from "./graph/GraphView";
+import type { RuntimeMessage, RuntimeState, RuntimeStatus } from "./runtime-types";
 
 type View = "terminal" | "office" | "graph";
-type RuntimeStatus = "disconnected" | "connecting" | "connected";
+
+const emptyRuntime: RuntimeState = {
+  potencia_version: "0.0.0",
+  protocol_version: "1",
+  agents: [],
+  activeSkills: [],
+  activePlugins: [],
+  projects: [],
+  tools: [],
+  tasks: [],
+  verifications: [],
+  events: [],
+  updated_at: 0
+};
+
+function applyEvent(state: RuntimeState, event: RuntimeMessage["data"]): RuntimeState {
+  const { type, payload } = event;
+  if (!payload || typeof payload !== "object") return state;
+
+  const collectionByType: Record<string, keyof Pick<RuntimeState, "agents" | "activeSkills" | "activePlugins" | "projects" | "tasks" | "verifications">> = {
+    agent_upsert_changed: "agents",
+    skill_upsert_changed: "activeSkills",
+    plugin_upsert_changed: "activePlugins",
+    project_upsert_changed: "projects",
+    task_upsert_changed: "tasks",
+    verification_upsert_changed: "verifications"
+  };
+
+  const collection = collectionByType[type];
+  if (collection && payload.item && typeof payload.item === "object" && "id" in payload.item) {
+    const item = payload.item as { id: string; [key: string]: unknown };
+    const current = state[collection] as Array<{ id: string }>;
+    return { ...state, [collection]: [...current.filter(entry => entry.id !== item.id), item], updated_at: event.timestamp };
+  }
+
+  if (type === "agent_removed" && typeof payload.id === "string") {
+    return { ...state, agents: state.agents.filter(agent => agent.id !== payload.id), updated_at: event.timestamp };
+  }
+
+  return { ...state, updated_at: event.timestamp };
+}
 
 export default function App() {
   const [view, setView] = useState<View>("terminal");
   const [menuOpen, setMenuOpen] = useState(false);
   const [runtimeStatus, setRuntimeStatus] = useState<RuntimeStatus>("disconnected");
+  const [runtimeState, setRuntimeState] = useState<RuntimeState>(emptyRuntime);
   const terminalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    return window.potencia.runtime.onMessage((message: any) => {
-      if (message?.type === "status" && message.status) setRuntimeStatus(message.status);
-      if (message?.type === "snapshot") setRuntimeStatus("connected");
+    return window.potencia.runtime.onMessage((raw: unknown) => {
+      const message = raw as RuntimeMessage;
+      if (message.type === "status") {
+        setRuntimeStatus(message.status);
+        return;
+      }
+      if (message.type === "snapshot") {
+        setRuntimeStatus("connected");
+        setRuntimeState(message.data);
+        return;
+      }
+      if (message.type === "event") {
+        setRuntimeState(current => applyEvent(current, message.data));
+      }
     });
   }, []);
 
@@ -30,16 +83,12 @@ export default function App() {
       fontSize: 14,
       scrollback: 10000,
       convertEol: true,
-      theme: {
-        background: "#050505",
-        foreground: "#e8e8e8",
-        cursor: "#fff"
-      }
+      theme: { background: "#050505", foreground: "#e8e8e8", cursor: "#fff" }
     });
 
     terminal.open(terminalRef.current);
-    const dispose = window.potencia.terminal.onData((data) => terminal.write(data));
-    const input = terminal.onData((data) => window.potencia.terminal.write(data));
+    const dispose = window.potencia.terminal.onData(data => terminal.write(data));
+    const input = terminal.onData(data => window.potencia.terminal.write(data));
     const resize = () => window.potencia.terminal.resize(terminal.cols, terminal.rows);
 
     window.potencia.terminal.start();
@@ -64,8 +113,8 @@ export default function App() {
       </div>
 
       {view === "terminal" && <div ref={terminalRef} className="terminal" />}
-      {view === "office" && <OfficeView />}
-      {view === "graph" && <GraphView />}
+      {view === "office" && <OfficeView runtimeState={runtimeState} runtimeStatus={runtimeStatus} />}
+      {view === "graph" && <GraphView runtimeState={runtimeState} runtimeStatus={runtimeStatus} />}
 
       <div className="potencia-menu">
         {menuOpen && (
@@ -75,11 +124,7 @@ export default function App() {
             <button onClick={() => setView("office")}>Office</button>
           </div>
         )}
-        <button
-          className="potencia-button"
-          aria-label="Abrir menu Potencia"
-          onClick={() => setMenuOpen((open) => !open)}
-        >
+        <button className="potencia-button" aria-label="Abrir menu Potencia" onClick={() => setMenuOpen(open => !open)}>
           {menuOpen ? "×" : "P"}
         </button>
       </div>
