@@ -82,6 +82,6 @@ export default function GraphView({ runtimeState, runtimeStatus }: { runtimeStat
       </svg>
     </div>
     <div className="graph-source">{runtimeStatus === "connected" ? "Fonte: Potencia Runtime" : "Fonte: aguardando Potencia Runtime"} • {nodes.length} nós</div>
-    {selected && <aside className="graph-details"><button onClick={() => setSelected(null)}>×</button><strong>{selected.label}</strong><span>{selected.kind}</span><small>Status: {selected.status || "unknown"}</small><p>Dados sincronizados do estado atual do Potencia Runtime.</p></aside>}
+    {selected && <aside className="graph-details"><button aria-label="Fechar detalhes" onClick={() => setSelected(null)}>×</button><strong>{selected.label}</strong><span>{selected.kind}</span><small>Status: {selected.status || "unknown"}</small><p>Dados sincronizados do estado atual do Potencia Runtime.</p></aside>}
   </section>;
 }
