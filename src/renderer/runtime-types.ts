@@ -49,8 +49,6 @@ export type RuntimeMessage =
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
-const isStringArray = (value: unknown): value is string[] =>
-  Array.isArray(value) && value.every(item => typeof item === "string");
 
 const isEntityArray = (value: unknown): value is RuntimeEntity[] =>
   Array.isArray(value) && value.every(item => isRecord(item) && typeof item.id === "string");
