@@ -4,7 +4,7 @@ import "@xterm/xterm/css/xterm.css";
 import "./styles.css";
 import OfficeView from "./office/OfficeView";
 import GraphView from "./graph/GraphView";
-import type { RuntimeMessage, RuntimeState, RuntimeStatus } from "./runtime-types";
+import type { RuntimeEvent, RuntimeMessage, RuntimeState, RuntimeStatus } from "./runtime-types";
 
 type View = "terminal" | "office" | "graph";
 
@@ -22,7 +22,7 @@ const emptyRuntime: RuntimeState = {
   updated_at: 0
 };
 
-function applyEvent(state: RuntimeState, event: RuntimeMessage["data"]): RuntimeState {
+function applyEvent(state: RuntimeState, event: RuntimeEvent): RuntimeState {
   const { type, payload } = event;
   if (!payload || typeof payload !== "object") return state;
 
