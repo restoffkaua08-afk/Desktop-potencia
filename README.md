@@ -2,26 +2,62 @@
 
 Interface desktop do ecossistema Potencia.
 
-## Estado atual
+## Arquitetura
 
-- Operação 1: fundação Electron + React + TypeScript.
-- Operação 2: terminal real em construção.
-- Operações 3–5: ainda não iniciadas.
+O projeto é a camada visual do Potencia Runtime:
 
-## Terminal
+```
+Potencia_IA (Runtime)
+        |
+   HTTP + SSE
+        |
+Potencia Desktop
+   |       |       |
+Terminal  Office  Graph
+```
 
-O terminal usa:
+O **Potencia_IA** continua sendo o núcleo. O Desktop é opcional e consome o estado do Runtime por uma API local autenticada.
 
-- Electron
-- React
-- xterm.js
-- node-pty
-- PowerShell no Windows
-- Electron IPC com context isolation
+## Estado implementado
 
-### Validação local
+### Fundação
+- Electron + React + TypeScript.
+- IPC com `contextIsolation`, `sandbox` e `nodeIntegration: false`.
+- Navegação externa e abertura de novas janelas bloqueadas.
 
-No Windows, dentro deste projeto:
+### Terminal real
+- Terminal real via `node-pty`.
+- PowerShell no Windows.
+- Entrada e saída interativas.
+- Resize.
+- Encerramento e limpeza do processo.
+- IPC estreito; o renderer não executa shell diretamente.
+
+### Runtime
+- Conexão local com `127.0.0.1:43173`.
+- Leitura do token do Potencia Runtime.
+- Snapshot inicial autenticado.
+- Stream SSE autenticada.
+- Reconexão automática.
+- Proteção contra streams antigas durante reconexão.
+- Protocolo diferencia `snapshot` de eventos.
+- Estado e histórico de eventos são refletidos no renderer.
+
+### Office
+- Agentes exibidos a partir do estado real do Runtime.
+- Salas, mesas e interação do usuário.
+- WASD/setas para movimentação.
+- Interação com mesas.
+- Visualização de skills e plugins registrados no Runtime.
+- Agentes demo estáticos foram removidos.
+
+### Graph
+- Nós derivados do estado real do Runtime.
+- Agentes, skills, plugins, tarefas e verificações.
+- Zoom, pan, seleção e modo de status.
+- Seed estática de demonstração removida.
+
+## Validação
 
 ```powershell
 npm install
@@ -31,16 +67,26 @@ npm run build
 npm run dev
 ```
 
-A operação 2 só deve ser considerada concluída depois de validar o shell real, entrada, saída, resize e encerramento.
+O CI executa `rebuild`, `typecheck` e `build` em Windows.
 
-## Arquitetura futura
+## Relação com Potencia_IA
 
-```
-Potencia Runtime
-      |
- Event Protocol
-      |
-Potencia Desktop
-  |      |      |
-Terminal Office Graph
-```
+O Desktop não substitui o Runtime.
+
+O fluxo recomendado é:
+
+1. iniciar o Potencia Runtime;
+2. iniciar o Desktop;
+3. verificar o indicador **Potencia conectado**;
+4. usar Terminal, Office ou Graph;
+5. acompanhar o estado sincronizado pelo Runtime.
+
+O Runtime continua funcional sem o Desktop.
+
+## Segurança
+
+O Desktop não expõe um comando genérico de shell ao renderer. O terminal é controlado por uma API IPC específica, e a comunicação com o Runtime exige o token local.
+
+## Versão
+
+Interface compatível com o protocolo `1` do Potencia Runtime.
