@@ -57,11 +57,15 @@ export function startRuntimeBridge(send: (message: RuntimeMessage) => void): () 
     try {
       const health = await get("/health");
       if (health.status !== 200) throw new Error("runtime unavailable");
+      const healthBody = JSON.parse(health.body) as { protocol_version?: unknown; potencia_version?: unknown };
+      if (healthBody.protocol_version !== "1") throw new Error("unsupported runtime protocol");
       const auth = await token();
       if (!auth) throw new Error("runtime token unavailable");
       const state = await get("/v1/state", auth);
       if (state.status !== 200) throw new Error("runtime state unavailable");
-      publish({ type: "snapshot", data: JSON.parse(state.body) });
+      const snapshot = JSON.parse(state.body) as { protocol_version?: unknown };
+      if (snapshot.protocol_version !== "1") throw new Error("unsupported runtime state protocol");
+      publish({ type: "snapshot", data: snapshot });
 
       if (stopped || currentGeneration !== generation) return;
       const req = request({
