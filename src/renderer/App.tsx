@@ -43,10 +43,10 @@ function applyEvent(state: RuntimeState, event: RuntimeMessage["data"]): Runtime
   }
 
   if (type === "agent_removed" && typeof payload.id === "string") {
-    return { ...state, agents: state.agents.filter(agent => agent.id !== payload.id), updated_at: event.timestamp };
+    return { ...state, agents: state.agents.filter(agent => agent.id !== payload.id), events: [...state.events.filter(item => item.id !== event.id), event].slice(-500), updated_at: event.timestamp };
   }
 
-  return { ...state, updated_at: event.timestamp };
+  return { ...state, events: [...state.events.filter(item => item.id !== event.id), event].slice(-500), updated_at: event.timestamp };
 }
 
 export default function App() {
