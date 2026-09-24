@@ -24,6 +24,7 @@ export default function OfficeView(){
  const [book,setBook]=useState<"plugins"|"skills"|null>(null);
  const [selected,setSelected]=useState<OfficeAgent|null>(null);
  const keys=useRef(new Set<string>());
+ const workTicks=useRef<Record<string,number>>({});
  const [nearDesk,setNearDesk]=useState<string|null>(null);
  const [seated,setSeated]=useState(false);
 
@@ -35,7 +36,11 @@ export default function OfficeView(){
    setPlayer(p=>{if(seated)return p;let dx=0,dy=0;if(keys.current.has("w")||keys.current.has("arrowup"))dy-=3.5;if(keys.current.has("s")||keys.current.has("arrowdown"))dy+=3.5;if(keys.current.has("a")||keys.current.has("arrowleft"))dx-=3.5;if(keys.current.has("d")||keys.current.has("arrowright"))dx+=3.5;const nx=Math.max(10,Math.min(WORLD.width-10,p.x+dx)),ny=Math.max(10,Math.min(WORLD.height-10,p.y+dy));if(blocked(nx,ny))return p;const room=nx<220&&ny>280?"left-bottom":nx>1020&&ny<260?"right-top":"center";return {x:nx,y:ny,room};});
    setAgents(current=>current.map(agent=>{
     const mode=activity[agent.id]||"wandering";
-    if(mode==="working"){return {...agent,state:"working",speech:agent.speech||"Trabalhando na tarefa..."}} 
+    if(mode==="working"){
+     workTicks.current[agent.id]=(workTicks.current[agent.id]||0)+1;
+     if(workTicks.current[agent.id]>260&&Math.random()<0.04){workTicks.current[agent.id]=0;setActivity(a=>({...a,[agent.id]:"leaving-desk"}));return {...agent,state:"walking",speech:"Tarefa concluída. Saindo da estação..."}}
+     return {...agent,state:"working",speech:agent.speech||"Trabalhando na tarefa..."};
+    } 
     if(mode==="going-to-desk"&&agent.deskId){const t=deskPoint(agent.deskId),dx=t.x-agent.x,dy=t.y-agent.y,d=Math.hypot(dx,dy);if(d<6){setActivity(a=>({...a,[agent.id]:"working"}));return {...agent,x:t.x,y:t.y,state:"working",speech:"Executando na estação..."}}return {...agent,x:agent.x+(dx/d)*1.3,y:agent.y+(dy/d)*1.3,state:"walking",speech:"Indo para a estação..."};
     }
     if(mode==="leaving-desk"){const t=targetFor(agent),dx=t.x-agent.x,dy=t.y-agent.y,d=Math.hypot(dx,dy);if(d<7){setActivity(a=>({...a,[agent.id]:"wandering"}));return {...agent,targetX:t.x,targetY:t.y,deskId:undefined,state:"idle",speech:"Voltando à circulação..."}}return {...agent,x:agent.x+(dx/d)*1.3,y:agent.y+(dy/d)*1.3,state:"walking",speech:"Saindo da estação..."};
@@ -50,7 +55,7 @@ export default function OfficeView(){
    }));
   },50);
   return()=>{window.clearInterval(timer);window.removeEventListener("keydown",down);window.removeEventListener("keyup",up);};
- },[activity,seated]);
+ },[seated]);
 
  useEffect(()=>{const d=officeDesks.reduce<{id:string;dist:number}|null>((best,d)=>{const dist=Math.hypot(d.x+33-player.x,d.y+30-player.y);return dist<55&&(!best||dist<best.dist)?{id:d.id,dist}:best},null);setNearDesk(d?.id||null)},[player]);
  useEffect(()=>{if(!nearDesk)return;const onKey=(e:KeyboardEvent)=>{if(e.key.toLowerCase()==="e")setSeated(v=>!v)};window.addEventListener("keydown",onKey);return()=>window.removeEventListener("keydown",onKey)},[nearDesk]);
