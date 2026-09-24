@@ -44,6 +44,7 @@ export function startRuntimeBridge(send: (message: RuntimeMessage) => void): () 
   let stopped = false;
   let retryTimer: NodeJS.Timeout | undefined;
   let stream: IncomingMessage | undefined;
+  let generation = 0;
 
   const publish = (message: RuntimeMessage) => {
     if (!stopped) send(message);
@@ -51,6 +52,7 @@ export function startRuntimeBridge(send: (message: RuntimeMessage) => void): () 
 
   const connect = async () => {
     if (stopped) return;
+    const currentGeneration = ++generation;
     publish({ type: "status", status: "connecting" });
     try {
       const health = await get("/health");
@@ -61,6 +63,7 @@ export function startRuntimeBridge(send: (message: RuntimeMessage) => void): () 
       if (state.status !== 200) throw new Error("runtime state unavailable");
       publish({ type: "snapshot", data: JSON.parse(state.body) });
 
+      if (stopped || currentGeneration !== generation) return;
       const req = request({
         host: HOST,
         port: PORT,
@@ -69,6 +72,10 @@ export function startRuntimeBridge(send: (message: RuntimeMessage) => void): () 
         headers: { Authorization: `Bearer ${auth}`, Accept: "text/event-stream" }
       });
       req.on("response", (res) => {
+        if (stopped || currentGeneration !== generation) {
+          res.resume();
+          return;
+        }
         stream = res;
         if ((res.statusCode ?? 0) !== 200) {
           res.resume();
@@ -123,6 +130,7 @@ export function startRuntimeBridge(send: (message: RuntimeMessage) => void): () 
 
   return () => {
     stopped = true;
+    generation += 1;
     if (retryTimer) clearTimeout(retryTimer);
     stream?.destroy();
   };
