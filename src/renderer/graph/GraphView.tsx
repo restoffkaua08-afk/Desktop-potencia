@@ -3,23 +3,6 @@ import type { GraphEdge, GraphNode, GraphNodeKind } from "./types";
 import "./graph.css";
 import type { RuntimeState, RuntimeStatus } from "../runtime-types";
 
-const seed:GraphNode[]=[
-{id:"potencia",label:"Potencia Runtime",kind:"project",x:500,y:270,status:"active"},
-{id:"claude",label:"Claude Code",kind:"agent",x:250,y:150,status:"connected"},
-{id:"executor",label:"Executor",kind:"agent",x:330,y:390,status:"working"},
-{id:"reviewer",label:"Reviewer",kind:"agent",x:690,y:390,status:"reviewing"},
-{id:"superpowers",label:"Superpowers",kind:"skill",x:90,y:270,status:"active"},
-{id:"verification",label:"Verification",kind:"verification",x:850,y:180,status:"running"},
-{id:"task",label:"Development Task",kind:"task",x:720,y:90,status:"active"},
-{id:"headroom",label:"Headroom",kind:"plugin",x:900,y:360,status:"configured"}
-];
-const edges:GraphEdge[]=[
-{from:"potencia",to:"claude",label:"bridge"},{from:"potencia",to:"executor",label:"delegates"},
-{from:"potencia",to:"reviewer",label:"reviews"},{from:"potencia",to:"superpowers",label:"skill"},
-{from:"potencia",to:"verification",label:"verifies"},{from:"potencia",to:"task",label:"task"},
-{from:"potencia",to:"headroom",label:"plugin"},{from:"executor",to:"task"},
-{from:"reviewer",to:"verification"}
-];
 const colors:Record<GraphNodeKind,string>={project:"#c69b5a",agent:"#76a7d9",skill:"#86b77a",plugin:"#a986c7",task:"#d98d65",verification:"#65b9ad"};
 
 function runtimeNodes(state: RuntimeState): { nodes: GraphNode[]; edges: GraphEdge[] } {
