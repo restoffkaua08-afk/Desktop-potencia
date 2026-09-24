@@ -6,12 +6,6 @@ import { clampPoint, WALKABLE, WORLD } from "./world";
 import "./office.css";
 
 type Player={x:number;y:number;room:"center"|"left-bottom"|"right-top"};
-type AgentActivity="wandering"|"going-to-desk"|"working"|"leaving-desk";
-
-const initialAgents:OfficeAgent[]=[
- {id:"demo-a",name:"Executor",role:"Especialista",state:"walking",x:430,y:170,targetX:650,targetY:260,room:"center"},
- {id:"demo-b",name:"Reviewer",role:"Verificador",state:"working",x:1095,y:120,targetX:1095,targetY:120,room:"right-top",deskId:"right-3",speech:"Validando a última alteração."}
-];
 const rects=officeDesks.map(d=>({x:d.x-8,y:d.y-8,width:82,height:75}));
 const deskPoint=(id:string)=>{const d=officeDesks.find(x=>x.id===id)!;return {x:d.x+33,y:d.y+72};};
 function blocked(x:number,y:number){return rects.some(r=>x>r.x-14&&x<r.x+r.width+14&&y>r.y-14&&y<r.y+r.height+14);}
