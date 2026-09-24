@@ -91,10 +91,13 @@ export function startRuntimeBridge(send: (message: RuntimeMessage) => void): () 
           const frames = buffer.split("\n\n");
           buffer = frames.pop() ?? "";
           for (const frame of frames) {
+            const eventName = frame.split("\n").find((item) => item.startsWith("event: "))?.slice(7).trim() ?? "message";
             const line = frame.split("\n").find((item) => item.startsWith("data: "));
             if (!line) continue;
             try {
-              publish({ type: "event", data: JSON.parse(line.slice(6)) });
+              const data = JSON.parse(line.slice(6));
+              if (eventName === "snapshot") publish({ type: "snapshot", data });
+              else publish({ type: "event", data });
             } catch {
               // Ignore malformed frames and keep the stream alive.
             }
