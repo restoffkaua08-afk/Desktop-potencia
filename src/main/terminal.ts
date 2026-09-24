@@ -37,8 +37,8 @@ export function writeTerminal(data: string) {
 }
 
 export function resizeTerminal(cols: number, rows: number) {
-  if (!terminal || cols < 2 || rows < 2) return;
-  terminal.resize(Math.floor(cols), Math.floor(rows));
+  if (!terminal || !Number.isFinite(cols) || !Number.isFinite(rows) || cols < 2 || rows < 2) return;
+  terminal.resize(Math.min(500, Math.floor(cols)), Math.min(200, Math.floor(rows)));
 }
 
 export function stopTerminal() {
