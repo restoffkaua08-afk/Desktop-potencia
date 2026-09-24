@@ -34,7 +34,14 @@ export interface RuntimeState {
   updated_at: number;
 }
 
+export interface RuntimeEvent {
+  id: string;
+  type: string;
+  timestamp: number;
+  payload: Record<string, unknown>;
+}
+
 export type RuntimeMessage =
   | { type: "status"; status: RuntimeStatus }
   | { type: "snapshot"; data: RuntimeState }
-  | { type: "event"; data: { id: string; type: string; timestamp: number; payload: Record<string, unknown> } };
+  | { type: "event"; data: RuntimeEvent };
