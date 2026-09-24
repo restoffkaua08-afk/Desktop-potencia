@@ -72,7 +72,7 @@ export default function GraphView({ runtimeState, runtimeStatus }: { runtimeStat
       <button className={mode === "general" ? "active" : ""} onClick={() => setMode("general")}>Geral</button>
       <button className={mode === "status" ? "active" : ""} onClick={() => setMode("status")}>Status</button>
       <button onClick={() => setZoom(z => Math.min(1.8, z + .1))}>+</button>
-      <button onClick={() => setZoom(z => Math.max(.65, z - .1)}>−</button>
+      <button onClick={() => setZoom(z => Math.max(.65, z - .1))}>−</button>
       <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Reset</button>
     </div></header>
     <div className="graph-canvas" onWheel={e => { e.preventDefault(); setZoom(z => Math.max(.65, Math.min(1.8, z + (e.deltaY < 0 ? .08 : -.08)))); }} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
