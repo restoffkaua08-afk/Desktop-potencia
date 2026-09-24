@@ -1,31 +1,46 @@
 # Potencia Desktop
 
-Desktop oficial da infraestrutura Potencia.
+Interface desktop do ecossistema Potencia.
 
-O Potencia Desktop é a camada visual e operacional que se conecta ao Potencia Runtime, oferecendo:
+## Estado atual
 
-- Terminal real para Claude Code e outros agentes.
-- Escritório Interativo para visualizar agentes, tarefas e skills ativas.
-- Gráfico Dinâmico inspirado no Graph View do Obsidian para visualizar relações e estado.
-- Comunicação em tempo real com o Potencia Runtime.
+- Operação 1: fundação Electron + React + TypeScript.
+- Operação 2: terminal real em construção.
+- Operações 3–5: ainda não iniciadas.
 
-## Relação com o Potencia_IA
+## Terminal
 
-O Desktop não substitui o Potencia_IA.
+O terminal usa:
+
+- Electron
+- React
+- xterm.js
+- node-pty
+- PowerShell no Windows
+- Electron IPC com context isolation
+
+### Validação local
+
+No Windows, dentro deste projeto:
+
+```powershell
+npm install
+npm run rebuild
+npm run typecheck
+npm run build
+npm run dev
+```
+
+A operação 2 só deve ser considerada concluída depois de validar o shell real, entrada, saída, resize e encerramento.
+
+## Arquitetura futura
 
 ```
-Potencia_IA
-   ↓
-Potencia Runtime / Event Bus
-   ↓
+Potencia Runtime
+      |
+ Event Protocol
+      |
 Potencia Desktop
-   ├── Terminal
-   ├── Escritório
-   └── Gráfico
+  |      |      |
+Terminal Office Graph
 ```
-
-O núcleo permanece no repositório Potencia_IA. O Desktop é a interface visual conectada a esse núcleo.
-
-## Status
-
-Projeto em construção.
