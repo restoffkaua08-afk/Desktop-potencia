@@ -3,6 +3,7 @@ import { Terminal } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
 import "./styles.css";
 import OfficeView from "./office/OfficeView";
+import GraphView from "./graph/GraphView";
 
 type View = "terminal" | "office" | "graph";
 
@@ -26,7 +27,7 @@ export default function App() {
   return <main className="app">
     {view==="terminal"&&<div ref={terminalRef} className="terminal"/>}
     {view==="office"&&<OfficeView/>}
-    {view==="graph"&&<section className="placeholder"><h1>Gráfico Dinâmico</h1><p>Operação 4.</p></section>}
+    {view==="graph"&&<GraphView/>}
     <div className="potencia-menu">
       {menuOpen&&<div className="view-actions"><button onClick={()=>setView("graph")}>Graph</button><button onClick={()=>setView("office")}>Office</button></div>}
       <button className="potencia-button" aria-label="Abrir menu Potencia" onClick={()=>{if(menuOpen)setView("terminal");setMenuOpen(v=>!v);}}>{menuOpen?"×":"P"}</button>
