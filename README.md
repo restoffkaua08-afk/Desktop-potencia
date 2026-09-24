@@ -1,63 +1,116 @@
 # Potencia Desktop
 
-Interface desktop do ecossistema Potencia.
+Interface desktop oficial do ecossistema Potencia.
+
+O **Potencia Desktop** fornece uma interface visual para o Potencia Runtime: terminal real, visão dos agentes e recursos do Runtime, Office e Graph. Ele é uma aplicação local; o estado do usuário permanece no próprio computador.
 
 ## Arquitetura
 
-O projeto é a camada visual do Potencia Runtime:
-
 ```
-Potencia_IA (Runtime)
-        |
-   HTTP + SSE
-        |
+Potencia Runtime
+      │
+ HTTP + SSE autenticado
+      │
 Potencia Desktop
-   |       |       |
-Terminal  Office  Graph
+ ┌────┼────────┐
+Terminal Office Graph
 ```
 
-O **Potencia_IA** continua sendo o núcleo. O Desktop é opcional e consome o estado do Runtime por uma API local autenticada.
+O Desktop não substitui o Runtime. O Runtime continua sendo o núcleo e pode funcionar sem a interface.
 
-## Estado implementado
+## Requisitos
 
-### Fundação
-- Electron + React + TypeScript.
-- IPC com `contextIsolation`, `sandbox` e `nodeIntegration: false`.
-- Navegação externa e abertura de novas janelas bloqueadas.
+- Windows 10/11 para o instalador oficial atual;
+- Potencia Runtime instalado;
+- Claude Code e demais ferramentas do usuário continuam sendo independentes do Desktop.
 
-### Terminal real
-- Terminal real via `node-pty`.
-- PowerShell no Windows.
-- Entrada e saída interativas.
-- Resize.
-- Encerramento e limpeza do processo.
-- IPC estreito; o renderer não executa shell diretamente.
+## Instalação
+
+### 1. Instale o Potencia Runtime
+
+No terminal:
+
+```powershell
+py -m pip install git+https://github.com/restoffkaua08-afk/Potencia_IA.git
+```
+
+Valide:
+
+```powershell
+potencia --version
+potencia doctor --workspace "C:\caminho\do\seu\projeto"
+```
+
+### 2. Inicie o Runtime no projeto
+
+```powershell
+potencia runtime --workspace "C:\caminho\do\seu\projeto"
+```
+
+### 3. Instale o Desktop
+
+Baixe o instalador `Potencia-Desktop-<versão>-x64.exe` na página de Releases do repositório.
+
+O instalador cria atalhos no menu Iniciar e, opcionalmente, na área de trabalho.
+
+## Uso
+
+1. deixe o Potencia Runtime em execução;
+2. abra o Potencia Desktop;
+3. confirme **Potencia conectado**;
+4. use **Terminal**, **Office** ou **Graph**;
+5. trabalhe normalmente no seu projeto e deixe o Runtime refletir o estado operacional.
+
+O terminal do Desktop usa um processo real do sistema. No Windows, o shell padrão é PowerShell.
+
+## Funcionalidades
+
+### Terminal
+- processo real via `node-pty`;
+- entrada e saída interativas;
+- resize;
+- encerramento limpo;
+- IPC mínimo entre renderer e processo principal.
 
 ### Runtime
-- Conexão local com `127.0.0.1:43173`.
-- Leitura do token do Potencia Runtime.
-- Snapshot inicial autenticado.
-- Stream SSE autenticada.
-- Reconexão automática.
-- Proteção contra streams antigas durante reconexão.
-- Protocolo diferencia `snapshot` de eventos.
-- Estado e histórico de eventos são refletidos no renderer.
+- health check;
+- autenticação por token local;
+- snapshot inicial;
+- SSE em tempo real;
+- reconexão automática;
+- compatibilidade explícita com protocolo `1`;
+- validação dos dados antes de chegarem à interface.
 
 ### Office
-- Agentes exibidos a partir do estado real do Runtime.
-- Salas, mesas e interação do usuário.
-- WASD/setas para movimentação.
-- Interação com mesas.
-- Visualização de skills e plugins registrados no Runtime.
-- Agentes demo estáticos foram removidos.
+- agentes vindos do Runtime real;
+- salas e mesas;
+- movimentação;
+- interação;
+- visualização de skills e plugins;
+- nenhum agente demo estático.
 
 ### Graph
-- Nós derivados do estado real do Runtime.
-- Agentes, skills, plugins, tarefas e verificações.
-- Zoom, pan, seleção e modo de status.
-- Seed estática de demonstração removida.
+- entidades reais do Runtime;
+- relações derivadas dos dados;
+- zoom e pan;
+- seleção e detalhes;
+- modo de status.
 
-## Validação
+## Segurança
+
+O renderer não possui acesso direto ao Node.js ou ao shell.
+
+O Desktop usa:
+
+- `contextIsolation: true`;
+- `sandbox: true`;
+- `nodeIntegration: false`;
+- IPC com canais específicos;
+- validação de mensagens;
+- bloqueio de navegação não confiável;
+- autenticação do Runtime por token local.
+
+## Desenvolvimento
 
 ```powershell
 npm install
@@ -67,26 +120,34 @@ npm run build
 npm run dev
 ```
 
-O CI executa `rebuild`, `typecheck` e `build` em Windows.
+Validação do pacote distribuível:
 
-## Relação com Potencia_IA
+```powershell
+npm run package:dir
+```
 
-O Desktop não substitui o Runtime.
+Gerar instalador Windows:
 
-O fluxo recomendado é:
+```powershell
+npm run package:win
+```
 
-1. iniciar o Potencia Runtime;
-2. iniciar o Desktop;
-3. verificar o indicador **Potencia conectado**;
-4. usar Terminal, Office ou Graph;
-5. acompanhar o estado sincronizado pelo Runtime.
+Os artefatos aparecem em `release/`.
 
-O Runtime continua funcional sem o Desktop.
+## CI
 
-## Segurança
+O GitHub Actions valida:
 
-O Desktop não expõe um comando genérico de shell ao renderer. O terminal é controlado por uma API IPC específica, e a comunicação com o Runtime exige o token local.
+- instalação das dependências;
+- rebuild do módulo nativo;
+- TypeScript;
+- build Electron;
+- empacotamento distributável.
 
-## Versão
+## Compatibilidade
 
-Interface compatível com o protocolo `1` do Potencia Runtime.
+O Desktop atual exige o protocolo `1` do Potencia Runtime. Uma versão incompatível é recusada em vez de tentar interpretar dados desconhecidos.
+
+## Licença
+
+MIT.
