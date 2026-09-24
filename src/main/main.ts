@@ -47,6 +47,13 @@ function createWindow() {
     }
   });
 
+  window.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+  window.webContents.on("will-navigate", (event, url) => {
+    const devUrl = process.env.ELECTRON_RENDERER_URL;
+    const trusted = url.startsWith("file://") || Boolean(devUrl && url === devUrl);
+    if (!trusted) event.preventDefault();
+  });
+
   window.on("closed", () => stopTerminal());
   if (process.env.ELECTRON_RENDERER_URL) void window.loadURL(process.env.ELECTRON_RENDERER_URL);
   else void window.loadFile(join(__dirname, "../renderer/index.html"));
