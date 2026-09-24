@@ -30,7 +30,7 @@ export default function GraphView(){
  const nodes=useMemo(()=>mode==="general"?seed:seed.filter(n=>n.status&&["active","working","reviewing","running","connected"].includes(n.status)),[mode]);
  const visible=new Set(nodes.map(n=>n.id));
  const onPointerDown=(e:PointerEvent)=>{(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);drag.current={x:e.clientX,y:e.clientY,px:pan.x,py:pan.y}};
- const onPointerMove=(e:React.PointerEvent)=>{if(!drag.current)return;setPan({x:drag.current.px+e.clientX-drag.current.x,y:drag.current.py+e.clientY-drag.current.y})};
+ const onPointerMove=(e:PointerEvent)=>{if(!drag.current)return;setPan({x:drag.current.px+e.clientX-drag.current.x,y:drag.current.py+e.clientY-drag.current.y})};
  const onPointerUp=()=>{drag.current=null};
  return <section className="graph-view">
   <header className="graph-toolbar"><strong>Potencia Graph</strong><div><button className={mode==="general"?"active":""} onClick={()=>setMode("general")}>Geral</button><button className={mode==="status"?"active":""} onClick={()=>setMode("status")}>Status</button><button onClick={()=>setZoom(z=>Math.min(1.8,z+.1))}>+</button><button onClick={()=>setZoom(z=>Math.max(.65,z-.1))}>−</button><button onClick={()=>{setZoom(1);setPan({x:0,y:0})}}>Reset</button></div></header>
