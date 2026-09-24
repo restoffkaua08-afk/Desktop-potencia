@@ -6,11 +6,20 @@ import OfficeView from "./office/OfficeView";
 import GraphView from "./graph/GraphView";
 
 type View = "terminal" | "office" | "graph";
+type RuntimeStatus = "disconnected" | "connecting" | "connected";
 
 export default function App() {
   const [view, setView] = useState<View>("terminal");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [runtimeStatus, setRuntimeStatus] = useState<RuntimeStatus>("disconnected");
   const terminalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    return window.potencia.runtime.onMessage((message: any) => {
+      if (message?.type === "status" && message.status) setRuntimeStatus(message.status);
+      if (message?.type === "snapshot") setRuntimeStatus("connected");
+    });
+  }, []);
 
   useEffect(() => {
     if (view !== "terminal" || !terminalRef.current) return;
@@ -19,6 +28,8 @@ export default function App() {
       cursorBlink: true,
       fontFamily: "Cascadia Mono, Consolas, monospace",
       fontSize: 14,
+      scrollback: 10000,
+      convertEol: true,
       theme: {
         background: "#050505",
         foreground: "#e8e8e8",
@@ -27,8 +38,6 @@ export default function App() {
     });
 
     terminal.open(terminalRef.current);
-
-    // Subscribe before spawning the shell so the first prompt/output is not lost.
     const dispose = window.potencia.terminal.onData((data) => terminal.write(data));
     const input = terminal.onData((data) => window.potencia.terminal.write(data));
     const resize = () => window.potencia.terminal.resize(terminal.cols, terminal.rows);
@@ -49,6 +58,11 @@ export default function App() {
 
   return (
     <main className="app">
+      <div className="runtime-status" data-status={runtimeStatus}>
+        <span className="runtime-dot" />
+        Potencia {runtimeStatus === "connected" ? "conectado" : runtimeStatus === "connecting" ? "conectando" : "desconectado"}
+      </div>
+
       {view === "terminal" && <div ref={terminalRef} className="terminal" />}
       {view === "office" && <OfficeView />}
       {view === "graph" && <GraphView />}
@@ -56,6 +70,7 @@ export default function App() {
       <div className="potencia-menu">
         {menuOpen && (
           <div className="view-actions">
+            <button onClick={() => setView("terminal")}>Terminal</button>
             <button onClick={() => setView("graph")}>Graph</button>
             <button onClick={() => setView("office")}>Office</button>
           </div>
@@ -63,10 +78,7 @@ export default function App() {
         <button
           className="potencia-button"
           aria-label="Abrir menu Potencia"
-          onClick={() => {
-            if (menuOpen) setView("terminal");
-            setMenuOpen((open) => !open);
-          }}
+          onClick={() => setMenuOpen((open) => !open)}
         >
           {menuOpen ? "×" : "P"}
         </button>
