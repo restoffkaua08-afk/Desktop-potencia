@@ -1,0 +1,98 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #050505;
+  color: #fff;
+}
+
+button {
+  font: inherit;
+}
+
+.app {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #050505;
+}
+
+.terminal {
+  width: 100%;
+  height: 100%;
+  padding: 10px 12px;
+}
+
+.xterm {
+  height: 100%;
+}
+
+.placeholder {
+  height: 100%;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  text-align: center;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.placeholder h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.placeholder p {
+  margin: 0;
+  color: #8d8d8d;
+}
+
+.potencia-menu {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.view-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.view-actions button,
+.potencia-button {
+  border: 1px solid #303030;
+  background: #101010;
+  color: #f4f4f4;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.view-actions button {
+  min-width: 72px;
+  height: 36px;
+}
+
+.potencia-button {
+  width: 42px;
+  height: 42px;
+  font-weight: 700;
+}
+
+.view-actions button:hover,
+.potencia-button:hover {
+  background: #191919;
+}
