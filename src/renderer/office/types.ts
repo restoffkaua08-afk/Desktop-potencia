@@ -4,8 +4,9 @@ export type AgentVisualState = "idle" | "walking" | "working" | "waiting" | "rev
 export interface OfficeAgent {
   id: string; name: string; role: string; state: AgentVisualState;
   x: number; y: number; targetX: number; targetY: number;
-  room: OfficeRoomId; deskId?: string;
+  room: OfficeRoomId; deskId?: string; speech?: string;
 }
+
 export interface OfficeDesk {
   id: string; room: "left-bottom" | "right-top";
   x: number; y: number; occupiedBy?: string;
