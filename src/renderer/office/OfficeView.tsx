@@ -18,13 +18,15 @@ export default function OfficeView({ runtimeState, runtimeStatus }: { runtimeSta
  const [book,setBook]=useState<"plugins"|"skills"|null>(null);
  const [selected,setSelected]=useState<OfficeAgent|null>(null);
  const keys=useRef(new Set<string>());
+ const agentsRef=useRef(runtimeState.agents);
+ agentsRef.current=runtimeState.agents;
  const [nearDesk,setNearDesk]=useState<string|null>(null);
  const [seated,setSeated]=useState(false);
 
  useEffect(()=>{
   setPositions(current=>{
    const next={...current};
-   for(const agent of runtimeState.agents){
+   for(const agent of agentsRef.current){
     if(!next[agent.id]){
      const area=agent.room==="left-bottom"?WALKABLE.left:agent.room==="right-top"?WALKABLE.right:WALKABLE.center;
      const p=clampPoint({x:area.x+40+(agent.id.length*17)%Math.max(50,area.width-80),y:area.y+40+(agent.id.length*29)%Math.max(50,area.height-80)},area);
@@ -76,7 +78,7 @@ export default function OfficeView({ runtimeState, runtimeStatus }: { runtimeSta
    });
   },50);
   return()=>{window.clearInterval(timer);window.removeEventListener("keydown",down);window.removeEventListener("keyup",up);};
- },[runtimeState.agents,seated]);
+ },[seated]);
 
  useEffect(()=>{const d=officeDesks.reduce<{id:string;dist:number}|null>((best,d)=>{const dist=Math.hypot(d.x+33-player.x,d.y+30-player.y);return dist<55&&(!best||dist<best.dist)?{id:d.id,dist}:best},null);setNearDesk(d?.id||null)},[player]);
  useEffect(()=>{if(!nearDesk)return;const onKey=(e:KeyboardEvent)=>{if(e.key.toLowerCase()==="e")setSeated(v=>!v)};window.addEventListener("keydown",onKey);return()=>window.removeEventListener("keydown",onKey)},[nearDesk]);
