@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type PointerEvent } from "react";
 import type { GraphEdge, GraphNode, GraphNodeKind } from "./types";
 import "./graph.css";
-import type { RuntimeState, RuntimeStatus } from "../runtime-types";
+import type { RuntimeEntity, RuntimeState, RuntimeStatus } from "../runtime-types";
 
 const colors:Record<GraphNodeKind,string>={project:"#c69b5a",agent:"#76a7d9",skill:"#86b77a",plugin:"#a986c7",task:"#d98d65",verification:"#65b9ad",tool:"#b7a7d9"};
 
@@ -26,9 +26,9 @@ function runtimeNodes(state: RuntimeState): { nodes: GraphNode[]; edges: GraphEd
   ["projects","project"],["agents","agent"],["activeSkills","skill"],["activePlugins","plugin"],
   ["tasks","task"],["verifications","verification"],["tools","tool"]
  ];
- for(const [collection] of collections){
+ for(const [collection, kind] of collections){
   for(const item of state[collection] as RuntimeEntity[]){
-   const from=byId.get(`${relationKeys[collection as string]||""}:${item.id}`);
+   const from=byId.get(`${kind}:${item.id}`);
    for(const [key,value] of Object.entries(item)){
     const kind=relationKeys[key];
     if(!kind || typeof value!=="string") continue;
