@@ -26,13 +26,14 @@ function applyEvent(state: RuntimeState, event: RuntimeEvent): RuntimeState {
   const { type, payload } = event;
   if (!payload || typeof payload !== "object") return state;
 
-  const collectionByType: Record<string, keyof Pick<RuntimeState, "agents" | "activeSkills" | "activePlugins" | "projects" | "tasks" | "verifications">> = {
+  const collectionByType: Record<string, keyof Pick<RuntimeState, "agents" | "activeSkills" | "activePlugins" | "projects" | "tools" | "tasks" | "verifications">> = {
     agent_upsert_changed: "agents",
     skill_upsert_changed: "activeSkills",
     plugin_upsert_changed: "activePlugins",
     project_upsert_changed: "projects",
     task_upsert_changed: "tasks",
-    verification_upsert_changed: "verifications"
+    verification_upsert_changed: "verifications",
+    tool_upsert_changed: "tools"
   };
 
   const collection = collectionByType[type];
