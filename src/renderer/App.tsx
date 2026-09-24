@@ -54,8 +54,25 @@ function applyEvent(state: RuntimeState, event: RuntimeEvent): RuntimeState {
     };
   }
 
-  if (type === "agent_removed" && typeof payload.id === "string") {
-    return { ...state, agents: state.agents.filter(agent => agent.id !== payload.id), events: [...state.events.filter(item => item.id !== event.id), event].slice(-500), updated_at: event.timestamp };
+  const removeCollectionByType: Record<string, keyof Pick<RuntimeState, "agents" | "activeSkills" | "activePlugins" | "projects" | "tools" | "tasks" | "verifications">> = {
+    agent_remove_changed: "agents",
+    skill_remove_changed: "activeSkills",
+    plugin_remove_changed: "activePlugins",
+    project_remove_changed: "projects",
+    task_remove_changed: "tasks",
+    verification_remove_changed: "verifications",
+    tool_remove_changed: "tools"
+  };
+
+  const removeCollection = removeCollectionByType[type];
+  if (removeCollection && typeof payload.id === "string") {
+    const current = state[removeCollection] as Array<{ id: string }>;
+    return {
+      ...state,
+      [removeCollection]: current.filter(entry => entry.id !== payload.id),
+      events: [...state.events.filter(item => item.id !== event.id), event].slice(-500),
+      updated_at: event.timestamp
+    };
   }
 
   return { ...state, events: [...state.events.filter(item => item.id !== event.id), event].slice(-500), updated_at: event.timestamp };
