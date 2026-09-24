@@ -39,7 +39,12 @@ function applyEvent(state: RuntimeState, event: RuntimeEvent): RuntimeState {
   if (collection && payload.item && typeof payload.item === "object" && "id" in payload.item) {
     const item = payload.item as { id: string; [key: string]: unknown };
     const current = state[collection] as Array<{ id: string }>;
-    return {\n      ...state,\n      [collection]: [...current.filter(entry => entry.id !== item.id), item],\n      events: [...state.events.filter(existing => existing.id !== event.id), event].slice(-500),\n      updated_at: event.timestamp\n    };
+    return {
+      ...state,
+      [collection]: [...current.filter(entry => entry.id !== item.id), item],
+      events: [...state.events.filter(existing => existing.id !== event.id), event].slice(-500),
+      updated_at: event.timestamp
+    };
   }
 
   if (type === "agent_removed" && typeof payload.id === "string") {
