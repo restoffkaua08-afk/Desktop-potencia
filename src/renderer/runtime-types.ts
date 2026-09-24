@@ -18,6 +18,13 @@ export interface RuntimeEntity {
   [key: string]: unknown;
 }
 
+export interface RuntimeEvent {
+  id: string;
+  type: string;
+  timestamp: number;
+  payload: Record<string, unknown>;
+}
+
 export interface RuntimeState {
   potencia_version: string;
   protocol_version: string;
@@ -30,18 +37,68 @@ export interface RuntimeState {
   tools: RuntimeEntity[];
   tasks: RuntimeEntity[];
   verifications: RuntimeEntity[];
-  events: Array<{ id: string; type: string; timestamp: number; payload: Record<string, unknown> }>;
+  events: RuntimeEvent[];
   updated_at: number;
-}
-
-export interface RuntimeEvent {
-  id: string;
-  type: string;
-  timestamp: number;
-  payload: Record<string, unknown>;
 }
 
 export type RuntimeMessage =
   | { type: "status"; status: RuntimeStatus }
   | { type: "snapshot"; data: RuntimeState }
   | { type: "event"; data: RuntimeEvent };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every(item => typeof item === "string");
+
+const isEntityArray = (value: unknown): value is RuntimeEntity[] =>
+  Array.isArray(value) && value.every(item => isRecord(item) && typeof item.id === "string");
+
+const isAgentArray = (value: unknown): value is RuntimeAgent[] =>
+  Array.isArray(value) &&
+  value.every(item =>
+    isRecord(item) &&
+    typeof item.id === "string" &&
+    typeof item.name === "string"
+  );
+
+export function isRuntimeEvent(value: unknown): value is RuntimeEvent {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    typeof value.type === "string" &&
+    typeof value.timestamp === "number" &&
+    isRecord(value.payload)
+  );
+}
+
+export function isRuntimeState(value: unknown): value is RuntimeState {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value.potencia_version === "string" &&
+    typeof value.protocol_version === "string" &&
+    isAgentArray(value.agents) &&
+    isEntityArray(value.activeSkills) &&
+    isEntityArray(value.activePlugins) &&
+    isEntityArray(value.projects) &&
+    isEntityArray(value.tools) &&
+    isEntityArray(value.tasks) &&
+    isEntityArray(value.verifications) &&
+    Array.isArray(value.events) &&
+    value.events.every(isRuntimeEvent) &&
+    typeof value.updated_at === "number"
+  );
+}
+
+export function isRuntimeMessage(value: unknown): value is RuntimeMessage {
+  if (!isRecord(value) || typeof value.type !== "string") return false;
+
+  if (value.type === "status") {
+    return value.status === "connected" || value.status === "connecting" || value.status === "disconnected";
+  }
+
+  if (value.type === "snapshot") return isRuntimeState(value.data);
+  if (value.type === "event") return isRuntimeEvent(value.data);
+  return false;
+}
