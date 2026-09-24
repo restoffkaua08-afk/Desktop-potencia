@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type PointerEvent } from "react";
 import type { GraphEdge, GraphNode, GraphNodeKind } from "./types";
 import "./graph.css";
-import type { RuntimeEntity, RuntimeState, RuntimeStatus } from "../runtime-types";
+import type { RuntimeAgent, RuntimeEntity, RuntimeState, RuntimeStatus } from "../runtime-types";
 
 const colors: Record<GraphNodeKind, string> = {
   project: "#c69b5a", agent: "#76a7d9", skill: "#86b77a", plugin: "#a986c7",
@@ -41,7 +41,7 @@ function runtimeNodes(state: RuntimeState): { nodes: GraphNode[]; edges: GraphEd
     ["activePlugins", "plugin"], ["tasks", "task"], ["verifications", "verification"], ["tools", "tool"]
   ];
   for (const [collection, nodeKind] of collections) {
-    for (const item of state[collection] as RuntimeEntity[]) {
+    for (const item of state[collection] as Array<RuntimeEntity | RuntimeAgent>) {
       const from = byId.get(`${nodeKind}:${item.id}`);
       if (!from) continue;
       for (const [key, value] of Object.entries(item)) {
