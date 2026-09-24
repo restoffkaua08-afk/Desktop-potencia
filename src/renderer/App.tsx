@@ -4,7 +4,7 @@ import "@xterm/xterm/css/xterm.css";
 import "./styles.css";
 import OfficeView from "./office/OfficeView";
 import GraphView from "./graph/GraphView";
-import type { RuntimeEvent, RuntimeMessage, RuntimeState, RuntimeStatus } from "./runtime-types";
+import { isRuntimeMessage, type RuntimeEvent, type RuntimeState, type RuntimeStatus } from "./runtime-types";
 
 type View = "terminal" | "office" | "graph";
 
@@ -58,18 +58,18 @@ export default function App() {
 
   useEffect(() => {
     return window.potencia.runtime.onMessage((raw: unknown) => {
-      const message = raw as RuntimeMessage;
-      if (message.type === "status") {
-        setRuntimeStatus(message.status);
+      if (!isRuntimeMessage(raw)) return;
+      if (raw.type === "status") {
+        setRuntimeStatus(raw.status);
         return;
       }
-      if (message.type === "snapshot") {
+      if (raw.type === "snapshot") {
         setRuntimeStatus("connected");
-        setRuntimeState(message.data);
+        setRuntimeState(raw.data);
         return;
       }
-      if (message.type === "event") {
-        setRuntimeState(current => applyEvent(current, message.data));
+      if (raw.type === "event") {
+        setRuntimeState(current => applyEvent(current, raw.data));
       }
     });
   }, []);
