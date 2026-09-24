@@ -9,7 +9,7 @@ import { isRuntimeMessage, type RuntimeEvent, type RuntimeState, type RuntimeSta
 type View = "terminal" | "office" | "graph";
 
 const emptyRuntime: RuntimeState = {
-  potencia_version: "0.0.0",
+  potencia_version: "0.3.0",
   protocol_version: "1",
   agents: [],
   activeSkills: [],
