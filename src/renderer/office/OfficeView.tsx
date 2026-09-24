@@ -10,7 +10,6 @@ const rects=officeDesks.map(d=>({x:d.x-8,y:d.y-8,width:82,height:75}));
 const deskPoint=(id:string)=>{const d=officeDesks.find(x=>x.id===id)!;return {x:d.x+33,y:d.y+72};};
 function blocked(x:number,y:number){return rects.some(r=>x>r.x-14&&x<r.x+r.width+14&&y>r.y-14&&y<r.y+r.height+14);}
 function targetFor(agent:OfficeAgent){const area=agent.room==="center"?WALKABLE.center:agent.room==="left-bottom"?WALKABLE.left:WALKABLE.right;for(let i=0;i<12;i++){const p=clampPoint({x:area.x+Math.random()*area.width,y:area.y+Math.random()*area.height},area);if(!blocked(p.x,p.y))return p;}return {x:area.x+area.width/2,y:area.y+area.height/2};}
-function nearestFreeDesk(agents:OfficeAgent[],agentId:string){const used=new Set(agents.filter(a=>a.id!==agentId).map(a=>a.deskId).filter(Boolean));return officeDesks.find(d=>!used.has(d.id));}
 
 export default function OfficeView({ runtimeState, runtimeStatus }: { runtimeState: RuntimeState; runtimeStatus: RuntimeStatus }) {
  const [positions,setPositions]=useState<Record<string,{x:number;y:number;targetX:number;targetY:number}>>({});
