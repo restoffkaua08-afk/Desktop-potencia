@@ -1,6 +1,6 @@
 {
   "name": "potencia-desktop",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Desktop interface for Potencia Runtime",
   "main": "dist/main/main.js",
