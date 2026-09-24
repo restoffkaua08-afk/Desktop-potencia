@@ -41,12 +41,12 @@ export default function OfficeView(){
     const mode=nextActivity[agent.id]||"wandering";
     if(mode==="working"){
      workTicks.current[agent.id]=(workTicks.current[agent.id]||0)+1;
-     if(workTicks.current[agent.id]>260&&Math.random()<0.04){workTicks.current[agent.id]=0;nextActivity[agent.id]="leaving-desk";return {...agent,state:"walking",speech:"Tarefa concluída. Saindo da estação..."}}
+     if(workTicks.current[agent.id]>260&&Math.random()<0.04){workTicks.current[agent.id]=0;nextActivity[agent.id]="leaving-desk";const t=targetFor(agent);return {...agent,targetX:t.x,targetY:t.y,state:"walking",speech:"Tarefa concluída. Saindo da estação..."}}
      return {...agent,state:"working",speech:agent.speech||"Trabalhando na tarefa..."};
     } 
     if(mode==="going-to-desk"&&agent.deskId){const t=deskPoint(agent.deskId),dx=t.x-agent.x,dy=t.y-agent.y,d=Math.hypot(dx,dy);if(d<6){nextActivity[agent.id]="working";return {...agent,x:t.x,y:t.y,state:"working",speech:"Executando na estação..."}}return {...agent,x:agent.x+(dx/d)*1.3,y:agent.y+(dy/d)*1.3,state:"walking",speech:"Indo para a estação..."};
     }
-    if(mode==="leaving-desk"){const t=targetFor(agent),dx=t.x-agent.x,dy=t.y-agent.y,d=Math.hypot(dx,dy);if(d<7){nextActivity[agent.id]="wandering";return {...agent,targetX:t.x,targetY:t.y,deskId:undefined,state:"idle",speech:"Voltando à circulação..."}}return {...agent,x:agent.x+(dx/d)*1.3,y:agent.y+(dy/d)*1.3,state:"walking",speech:"Saindo da estação..."};
+    if(mode==="leaving-desk"){const t={x:agent.targetX,y:agent.targetY},dx=t.x-agent.x,dy=t.y-agent.y,d=Math.hypot(dx,dy);if(d<7){nextActivity[agent.id]="wandering";return {...agent,targetX:t.x,targetY:t.y,deskId:undefined,state:"idle",speech:"Voltando à circulação..."}}return {...agent,x:agent.x+(dx/d)*1.3,y:agent.y+(dy/d)*1.3,state:"walking",speech:"Saindo da estação..."};
     }
     const dx=agent.targetX-agent.x,dy=agent.targetY-agent.y,d=Math.hypot(dx,dy);
     if(d<7){
