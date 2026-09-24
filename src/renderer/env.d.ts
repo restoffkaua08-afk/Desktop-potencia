@@ -11,6 +11,9 @@ declare global {
         stop(): void;
         onData(callback: (data: string) => void): () => void;
       };
+      runtime: {
+        onMessage(callback: (message: unknown) => void): () => void;
+      };
     };
   }
 }
