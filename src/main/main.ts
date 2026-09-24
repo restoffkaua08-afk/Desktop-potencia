@@ -1,5 +1,11 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import { join } from "node:path";
+import {
+  resizeTerminal,
+  startTerminal,
+  stopTerminal,
+  writeTerminal
+} from "./terminal";
 
 function createWindow() {
   const window = new BrowserWindow({
@@ -14,6 +20,24 @@ function createWindow() {
       nodeIntegration: false
     }
   });
+
+  ipcMain.on("terminal:start", (event) => {
+    startTerminal((data) => event.sender.send("terminal:data", data));
+  });
+
+  ipcMain.on("terminal:write", (_event, data: unknown) => {
+    if (typeof data === "string") writeTerminal(data);
+  });
+
+  ipcMain.on("terminal:resize", (_event, cols: unknown, rows: unknown) => {
+    if (typeof cols === "number" && typeof rows === "number") {
+      resizeTerminal(cols, rows);
+    }
+  });
+
+  ipcMain.on("terminal:stop", () => stopTerminal());
+
+  window.on("closed", () => stopTerminal());
 
   if (process.env.ELECTRON_RENDERER_URL) {
     void window.loadURL(process.env.ELECTRON_RENDERER_URL);
@@ -31,5 +55,6 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
+  stopTerminal();
   if (process.platform !== "darwin") app.quit();
 });
