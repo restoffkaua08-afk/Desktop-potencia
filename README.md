@@ -151,3 +151,8 @@ O Desktop atual exige o protocolo `1` do Potencia Runtime. Uma versão incompat�
 ## Licença
 
 MIT.
+
+
+## Documentação de desenvolvimento
+
+A especificação completa da evolução multiagente está em [`docs/`](docs/README.md). Ela cobre visão, requisitos, arquitetura, grade 3×3, sessões Claude Code/Codex, segurança, roadmap, testes e pesquisa técnica. A documentação separa o estado atual do repositório das funcionalidades planejadas.
